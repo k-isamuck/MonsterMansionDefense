@@ -127,4 +127,17 @@ public class EnemyTypeTwo : MonoBehaviour
             animator.SetBool("IsMoving", false);
         }
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.Log("E2 trigger entered by: " + collision.name);
+
+        Player player = collision.GetComponent<Player>();
+
+        if (player != null)
+        {
+            Debug.Log("EnemyTypeTwo stunned player");
+            player.Stun(0.5f);
+        }
+    }
 }

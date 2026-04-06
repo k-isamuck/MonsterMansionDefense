@@ -6,7 +6,7 @@ public class EnemyTypeOne : MonoBehaviour
     public Node currentNode;
     public List<Node> path = new List<Node>();
 
-    [SerializeField] private float moveSpeed = 0.01f;
+    [SerializeField] private float moveSpeed = 0.0001f;
 
     private Animator animator;
     private Vector2 lastMoveDirection = Vector2.down;
@@ -48,23 +48,18 @@ public class EnemyTypeOne : MonoBehaviour
 
         List<Node> spawnableNodes = new List<Node>();
 
-        HashSet<string> blockedNodes = new HashSet<string>()
-        {
-            "Node8I", "Node8L",
-            "Node9H", "Node9I", "Node9J", "Node9K", "Node9L", "Node9M",
-            "Node10I", "Node10L",
-            "Node11I", "Node11L",
-            "Node12I", "Node12J", "Node12K", "Node12L",
-            "Node13I", "Node13L",
-            "Center"
-        };
-
         foreach (Node node in nodes)
         {
-            if (node != null && !blockedNodes.Contains(node.gameObject.name))
-            {
-                spawnableNodes.Add(node);
-            }
+            if (node == null)
+                continue;
+
+            if (node.gameObject.name == "Center")
+                continue;
+
+            if (IsInsideCenterBox(node.gameObject.name))
+                continue;
+
+            spawnableNodes.Add(node);
         }
 
         if (spawnableNodes.Count == 0)
@@ -95,6 +90,36 @@ public class EnemyTypeOne : MonoBehaviour
             path.RemoveAt(0);
         }
     }
+
+    private bool IsInsideCenterBox(string nodeName)
+{
+    if (!nodeName.StartsWith("Node"))
+        return false;
+
+    string coords = nodeName.Substring(4);
+
+    int splitIndex = 0;
+    while (splitIndex < coords.Length && char.IsDigit(coords[splitIndex]))
+    {
+        splitIndex++;
+    }
+
+    if (splitIndex == 0 || splitIndex >= coords.Length)
+        return false;
+
+    string rowText = coords.Substring(0, splitIndex);
+    string colText = coords.Substring(splitIndex);
+
+    if (!int.TryParse(rowText, out int row))
+        return false;
+
+    char col = colText[0];
+
+    bool inCenterRows = row >= 5 && row <= 16;
+    bool inCenterCols = col >= 'E' && col <= 'P';
+
+    return inCenterRows && inCenterCols;
+}
 
     private void Update()
     {

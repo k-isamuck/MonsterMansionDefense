@@ -1,13 +1,18 @@
 using UnityEngine;
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
-    float speed = 4.0f;
+    [SerializeField] private float speed = 4.0f;
 
     private Animator animator;
+
     private Vector2 movement;
     private Vector2 lastMoveDirection = Vector2.down;
+
     private bool isAttacking = false;
+    private bool isStunned = false;
+    private float lastStunTime;
 
     void Start()
     {
@@ -16,67 +21,70 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (isAttacking)
-            return; 
+        if (isStunned)
+        {
+            movement = Vector2.zero;
 
-        movement = Vector2.zero;
+            if (animator != null)
+            {
+                animator.SetBool("IsMoving", false);
+            }
 
-        // Input
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-        {
-            movement.x += 1;
-        }
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-        {
-            movement.x -= 1;
-        }
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-        {
-            movement.y += 1;
-        }
-        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-        {
-            movement.y -= 1;
+            return;
         }
 
-        // Normalize diagonal movement
-        if (movement.sqrMagnitude > 1f)
-        {
-            movement.Normalize();
-        }
-
-        // Move
-        transform.Translate(movement * speed * Time.deltaTime);
-
-        // Animate
+        ReadInput();
+        MovePlayer();
         UpdateAnimation();
     }
 
-    void UpdateAnimation()
+    private void ReadInput()
+    {
+        movement = Vector2.zero;
+
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            movement.x += 1;
+
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            movement.x -= 1;
+
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+            movement.y += 1;
+
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+            movement.y -= 1;
+
+        if (movement.sqrMagnitude > 1f)
+            movement.Normalize();
+    }
+
+    private void MovePlayer()
+    {
+        transform.Translate(movement * speed * Time.deltaTime);
+    }
+
+    private void UpdateAnimation()
     {
         if (animator == null)
             return;
 
-        if (movement.sqrMagnitude > 0.001f)
+        if (!isAttacking && !isStunned)
         {
-            // Snap to 4 directions
-            if (Mathf.Abs(movement.x) > Mathf.Abs(movement.y))
+            if (movement.sqrMagnitude > 0.001f)
             {
-                lastMoveDirection = new Vector2(Mathf.Sign(movement.x), 0f);
+                if (Mathf.Abs(movement.x) > Mathf.Abs(movement.y))
+                    lastMoveDirection = new Vector2(Mathf.Sign(movement.x), 0f);
+                else
+                    lastMoveDirection = new Vector2(0f, Mathf.Sign(movement.y));
+
+                animator.SetFloat("MoveX", lastMoveDirection.x);
+                animator.SetFloat("MoveY", lastMoveDirection.y);
+                animator.SetBool("IsMoving", true);
             }
             else
             {
-                lastMoveDirection = new Vector2(0f, Mathf.Sign(movement.y));
+                animator.SetBool("IsMoving", false);
             }
-
-            animator.SetFloat("MoveX", lastMoveDirection.x);
-            animator.SetFloat("MoveY", lastMoveDirection.y);
-            animator.SetBool("IsMoving", true);
-        }
-        else
-        {
-            // Idle (single animation)
-            animator.SetBool("IsMoving", false);
         }
     }
 
@@ -89,26 +97,56 @@ public class Player : MonoBehaviour
             Destroy(collision.gameObject);
             StartCoroutine(Attack());
         }
-        
-        if (collision.gameObject.tag == "Walls")
+
+        if (collision.gameObject.CompareTag("Walls"))
         {
             transform.Translate(-movement * speed * Time.deltaTime);
         }
-        
     }
 
-    System.Collections.IEnumerator Attack()
+    private IEnumerator Attack()
     {
         isAttacking = true;
 
-        // Make sure correct direction is used
-        animator.SetFloat("MoveX", lastMoveDirection.x);
-        animator.SetFloat("MoveY", lastMoveDirection.y);
+        if (animator != null)
+        {
+            animator.SetFloat("MoveX", lastMoveDirection.x);
+            animator.SetFloat("MoveY", lastMoveDirection.y);
+            animator.SetTrigger("Attack");
+        }
 
-        animator.SetTrigger("Attack");
-
-        yield return new WaitForSeconds(0.5f); // match animation length
+        yield return new WaitForSeconds(0.5f);
 
         isAttacking = false;
+    }
+
+    public void Stun(float duration)
+    {
+        if (Time.time - lastStunTime < 1f)
+            return;
+
+        lastStunTime = Time.time;
+        StartCoroutine(StunCoroutine(duration));
+    }
+
+    private IEnumerator StunCoroutine(float duration)
+    {
+        isStunned = true;
+        movement = Vector2.zero;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsMoving", false);
+            animator.SetBool("Stunned", true);
+        }
+
+        yield return new WaitForSeconds(duration);
+
+        isStunned = false;
+
+        if (animator != null)
+        {
+            animator.SetBool("Stunned", false);
+        }
     }
 }

@@ -28337,7 +28337,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5140161e46d8edd42b475f59105f04cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  speed: 4
 --- !u!212 &1779345333
 SpriteRenderer:
   serializedVersion: 2
@@ -28483,7 +28482,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.4, y: 0.4}
+  m_Size: {x: 0.6875, y: 0.6875}
   m_EdgeRadius: 0
 --- !u!95 &1779345337
 Animator:
