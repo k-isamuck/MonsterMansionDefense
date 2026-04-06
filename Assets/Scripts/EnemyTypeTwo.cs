@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,9 +8,11 @@ public class EnemyTypeTwo : MonoBehaviour
     public List<Node> path = new List<Node>();
 
     [SerializeField] private float moveSpeed = 3f;
+    [SerializeField] private float attackDuration = 0.5f;
 
     private Animator animator;
     private Vector2 lastMoveDirection = Vector2.down;
+    private bool isAttacking = false;
 
     private void Start()
     {
@@ -33,10 +36,19 @@ public class EnemyTypeTwo : MonoBehaviour
 
             currentNode = closestNode;
         }
+
+        if (animator != null)
+        {
+            animator.SetFloat("MoveX", lastMoveDirection.x);
+            animator.SetFloat("MoveY", lastMoveDirection.y);
+        }
     }
 
     private void Update()
     {
+        if (isAttacking)
+            return;
+
         CreatePath();
     }
 
@@ -105,6 +117,9 @@ public class EnemyTypeTwo : MonoBehaviour
         if (animator == null)
             return;
 
+        if (isAttacking)
+            return;
+
         if (moveDirection.sqrMagnitude > 0.001f)
         {
             if (Mathf.Abs(moveDirection.x) > Mathf.Abs(moveDirection.y))
@@ -115,17 +130,10 @@ public class EnemyTypeTwo : MonoBehaviour
             {
                 lastMoveDirection = new Vector2(0f, Mathf.Sign(moveDirection.y));
             }
+        }
 
-            animator.SetFloat("MoveX", lastMoveDirection.x);
-            animator.SetFloat("MoveY", lastMoveDirection.y);
-            animator.SetBool("IsMoving", true);
-        }
-        else
-        {
-            animator.SetFloat("MoveX", lastMoveDirection.x);
-            animator.SetFloat("MoveY", lastMoveDirection.y);
-            animator.SetBool("IsMoving", false);
-        }
+        animator.SetFloat("MoveX", lastMoveDirection.x);
+        animator.SetFloat("MoveY", lastMoveDirection.y);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -136,8 +144,40 @@ public class EnemyTypeTwo : MonoBehaviour
 
         if (player != null)
         {
-            Debug.Log("EnemyTypeTwo stunned player");
-            player.Stun(0.5f);
+            StartCoroutine(Attack(player));
         }
+    }
+
+    private IEnumerator Attack(Player player)
+    {
+        if (isAttacking)
+            yield break;
+
+        isAttacking = true;
+
+        Vector2 dir = (player.transform.position - transform.position).normalized;
+
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
+        {
+            lastMoveDirection = new Vector2(Mathf.Sign(dir.x), 0f);
+        }
+        else
+        {
+            lastMoveDirection = new Vector2(0f, Mathf.Sign(dir.y));
+        }
+
+        if (animator != null)
+        {
+            animator.SetFloat("MoveX", lastMoveDirection.x);
+            animator.SetFloat("MoveY", lastMoveDirection.y);
+            animator.ResetTrigger("Attack");
+            animator.SetTrigger("Attack");
+        }
+
+        player.Stun(0.5f);
+
+        yield return new WaitForSeconds(attackDuration);
+
+        isAttacking = false;
     }
 }
