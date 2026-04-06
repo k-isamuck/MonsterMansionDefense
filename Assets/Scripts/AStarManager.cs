@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,61 +12,85 @@ public class AStarManager : MonoBehaviour
 
     public List<Node> GeneratePath(Node start, Node end)
     {
-        List<Node> openSet = new List<Node>();
+        if (start == null)
+        {
+            Debug.LogError("GeneratePath: start is null");
+            return null;
+        }
 
-        foreach(Node n in FindObjectsOfType<Node>())
+        if (end == null)
+        {
+            Debug.LogError("GeneratePath: end is null");
+            return null;
+        }
+
+        List<Node> nodesNeedToCheck = new List<Node>();
+
+        foreach (Node n in FindObjectsOfType<Node>())
         {
             n.gScore = float.MaxValue;
+            n.hScore = 0;
+            n.cameFrom = null;
         }
 
         start.gScore = 0;
         start.hScore = Vector2.Distance(start.transform.position, end.transform.position);
-        openSet.Add(start);
+        nodesNeedToCheck.Add(start);
 
-        while(openSet.Count > 0)
+        while (nodesNeedToCheck.Count > 0)
         {
-            int lowestF = default;
+            int lowestF = 0;
 
-            for(int i = 1; i <openSet.Count; i++)
+            for (int i = 1; i < nodesNeedToCheck.Count; i++)
             {
-                if(openSet[i].FScore() < openSet[lowestF].FScore())
+                if (nodesNeedToCheck[i].FScore() < nodesNeedToCheck[lowestF].FScore())
                 {
                     lowestF = i;
                 }
             }
 
-            Node currentNode = openSet[lowestF];
-            openSet.Remove(currentNode);
+            Node currentNode = nodesNeedToCheck[lowestF];
+            nodesNeedToCheck.RemoveAt(lowestF);
 
-            if(currentNode == end)
+            if (currentNode == end)
             {
                 List<Node> path = new List<Node>();
+                Node pathNode = end;
 
-                path.Insert(0,end);
-
-                while(currentNode != start)
+                while (pathNode != null)
                 {
-                    currentNode = currentNode.cameFrom;
-                    path.Add(currentNode);
+                    path.Add(pathNode);
+
+                    if (pathNode == start)
+                        break;
+
+                    pathNode = pathNode.cameFrom;
                 }
 
                 path.Reverse();
                 return path;
             }
 
-            foreach(Node connectedNode in currentNode.connections)
-            {
-                float heldGScore = currentNode.gScore + Vector2.Distance(connectedNode.transform.position, end.transform.position);
+            if (currentNode.connections == null)
+                continue;
 
-                if(heldGScore < connectedNode.gScore)
+            foreach (Node connectedNode in currentNode.connections)
+            {
+                if (connectedNode == null) continue;
+
+                float tentativeGScore =
+                    currentNode.gScore +
+                    Vector2.Distance(currentNode.transform.position, connectedNode.transform.position);
+
+                if (tentativeGScore < connectedNode.gScore)
                 {
                     connectedNode.cameFrom = currentNode;
-                    connectedNode.gScore = heldGScore;
+                    connectedNode.gScore = tentativeGScore;
                     connectedNode.hScore = Vector2.Distance(connectedNode.transform.position, end.transform.position);
 
-                    if (!openSet.Contains(connectedNode))
+                    if (!nodesNeedToCheck.Contains(connectedNode))
                     {
-                        openSet.Add(connectedNode);
+                        nodesNeedToCheck.Add(connectedNode);
                     }
                 }
             }
@@ -75,5 +98,4 @@ public class AStarManager : MonoBehaviour
 
         return null;
     }
-
 }
