@@ -21,6 +21,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        // Stop player movement when stunned.
         if (isStunned)
         {
             movement = Vector2.zero;
@@ -33,11 +34,13 @@ public class Player : MonoBehaviour
             return;
         }
 
+        // Always run.
         ReadInput();
         MovePlayer();
         UpdateAnimation();
     }
 
+    // Get player input and move Player accordingly.
     private void ReadInput()
     {
         movement = Vector2.zero;
@@ -58,16 +61,19 @@ public class Player : MonoBehaviour
             movement.Normalize();
     }
 
+    // Adjust player movement to align with game time.
     private void MovePlayer()
     {
         transform.Translate(movement * speed * Time.deltaTime);
     }
 
+    // Update animation based on movement and triggers.
     private void UpdateAnimation()
     {
         if (animator == null)
             return;
 
+        // Play directional walking anim.
         if (!isAttacking && !isStunned)
         {
             if (movement.sqrMagnitude > 0.001f)
@@ -88,26 +94,31 @@ public class Player : MonoBehaviour
         }
     }
 
+    // Handle collisions.
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Debug.Log("Hit: " + collision.gameObject.name);
 
+        // Destory EnemyTypeOne when hit.
         if (collision.gameObject.CompareTag("EnemyTypeOne"))
         {
             Destroy(collision.gameObject);
             StartCoroutine(Attack());
         }
 
+        // Have walls push back with same movement so Player does not go through them.
         if (collision.gameObject.CompareTag("Walls"))
         {
             transform.Translate(-movement * speed * Time.deltaTime);
         }
     }
 
+    // Handle Player attacking EnemyTypeOne.
     private IEnumerator Attack()
     {
         isAttacking = true;
 
+        // Update variables for directional animation.
         if (animator != null)
         {
             animator.SetFloat("MoveX", lastMoveDirection.x);
@@ -115,20 +126,25 @@ public class Player : MonoBehaviour
             animator.SetTrigger("Attack");
         }
 
+        // Make sure full animation can play.
         yield return new WaitForSeconds(0.5f);
 
         isAttacking = false;
     }
 
+    // Handle player getting stunned when hit.
     public void Stun(float duration)
     {
+        // Make sure Player does not get stun locked.
         if (Time.time - lastStunTime < 1f)
             return;
 
-        lastStunTime = Time.time;
-        StartCoroutine(StunCoroutine(duration));
+        
+        lastStunTime = Time.time; // Set new lastStunTime.
+        StartCoroutine(StunCoroutine(duration)); // Run stun animation.
     }
 
+    // Run stun animation and stop movement.
     private IEnumerator StunCoroutine(float duration)
     {
         isStunned = true;

@@ -6,7 +6,7 @@ public class EnemyTypeOne : MonoBehaviour
     public Node currentNode;
     public List<Node> path = new List<Node>();
 
-    [SerializeField] private float moveSpeed = 0.0001f;
+    [SerializeField] private float moveSpeed = 3.0f;
 
     private Animator animator;
     private Vector2 lastMoveDirection = Vector2.down;
