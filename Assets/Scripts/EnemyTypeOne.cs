@@ -128,12 +128,17 @@ public class EnemyTypeOne : MonoBehaviour
 
     private void MoveAlongPath()
     {
-        if (path == null || path.Count == 0)
+        if (path.Count == 0)
+{
+        UpdateAnimation(Vector2.zero);
+
+        if (HouseHealth.instance != null)
         {
-            UpdateAnimation(Vector2.zero);
-            Destroy(gameObject);
-            return;
+            HouseHealth.instance.TakeDamage(1);
         }
+
+        Destroy(gameObject);
+    }
 
         Node targetNode = path[0];
 
@@ -159,6 +164,17 @@ public class EnemyTypeOne : MonoBehaviour
 
             if (path.Count == 0)
             {
+                Debug.Log("TypeOne reached center");
+
+                if (HouseHealth.instance != null)
+                {
+                    HouseHealth.instance.TakeDamage(1);
+                }
+                else
+                {
+                    Debug.LogWarning("HouseHealth.instance is null");
+                }
+
                 UpdateAnimation(Vector2.zero);
                 Destroy(gameObject);
             }

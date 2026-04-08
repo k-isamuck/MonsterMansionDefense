@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTypeOne
   currentNode: {fileID: 0}
   path: []
-  moveSpeed: 1
+  moveSpeed: 2
 --- !u!212 &6361612977910578894
 SpriteRenderer:
   serializedVersion: 2
