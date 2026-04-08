@@ -85,6 +85,7 @@ public class GameLoop : MonoBehaviour
             return;
 
         currentTypeTwo = Instantiate(enemyTypeTwoPrefab);
+        currentTypeTwo = Instantiate(enemyTypeTwoPrefab);
     }
 
     // Instantiate new TypeThree enemy.

@@ -4,6 +4,7 @@ using System.Collections;
 public class Player : MonoBehaviour
 {
     [SerializeField] private float speed = 4.0f;
+    [SerializeField] private float stunCooldown = 1.0f;
 
     private Animator animator;
 
@@ -136,7 +137,7 @@ public class Player : MonoBehaviour
     public void Stun(float duration)
     {
         // Make sure Player does not get stun locked.
-        if (Time.time - lastStunTime < 1f)
+        if (Time.time - lastStunTime < stunCooldown)
             return;
 
         
