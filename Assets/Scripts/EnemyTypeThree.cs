@@ -9,6 +9,7 @@ public class EnemyTypeThree : MonoBehaviour
 
     [SerializeField] private float moveSpeed = 3f;
     [SerializeField] private float attackDuration = 0.5f;
+    [SerializeField] private float repathInterval = 0.5f;
 
     [Header("Shooting")]
     [SerializeField] private GameObject projectilePrefab;
@@ -22,6 +23,7 @@ public class EnemyTypeThree : MonoBehaviour
     private Vector2 lastMoveDirection = Vector2.down;
     private bool isAttacking = false;
     private float shootTimer;
+    private float repathTimer;
 
     private void Start()
     {
@@ -38,105 +40,132 @@ public class EnemyTypeThree : MonoBehaviour
 
         if (currentNode == null)
         {
-            Node[] nodes = FindObjectsOfType<Node>();
-            float closestDistance = Mathf.Infinity;
-            Node closestNode = null;
-
-            foreach (Node node in nodes)
-            {
-                float dist = Vector2.Distance(transform.position, node.transform.position);
-                if (dist < closestDistance)
-                {
-                    closestDistance = dist;
-                    closestNode = node;
-                }
-            }
-
-            currentNode = closestNode;
+            currentNode = GetClosestNodeToPosition(transform.position);
         }
 
         if (animator != null)
         {
             animator.SetFloat("MoveX", lastMoveDirection.x);
             animator.SetFloat("MoveY", lastMoveDirection.y);
+            animator.SetBool("IsMoving", false);
+            animator.SetBool("IsShooting", false);
         }
+
+        RecalculatePathToPlayer();
     }
 
     private void Update()
     {
+        if (player == null || AStarManager.instance == null)
+            return;
+
         if (isAttacking)
             return;
 
         shootTimer += Time.deltaTime;
+        repathTimer += Time.deltaTime;
 
-        if (player != null && CanSeePlayer() && shootTimer >= shootInterval)
+        if (CanSeePlayer() && shootTimer >= shootInterval)
         {
             shootTimer = 0f;
             StartCoroutine(AttackAndShoot());
             return;
         }
 
-        CreatePath();
+        if (repathTimer >= repathInterval)
+        {
+            repathTimer = 0f;
+            RecalculatePathToPlayer();
+        }
+
+        MoveAlongPath();
     }
 
-    public void CreatePath()
+    private void RecalculatePathToPlayer()
     {
-        if (path != null && path.Count > 0)
+        if (currentNode == null)
         {
-            Vector3 targetPosition = new Vector3(
-                path[0].transform.position.x,
-                path[0].transform.position.y,
-                1
-            );
-
-            Vector2 moveDirection = (targetPosition - transform.position).normalized;
-
-            UpdateAnimation(moveDirection);
-
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                targetPosition,
-                moveSpeed * Time.deltaTime
-            );
-
-            if (Vector2.Distance(transform.position, path[0].transform.position) < 0.1f)
-            {
-                currentNode = path[0];
-                path.RemoveAt(0);
-            }
+            currentNode = GetClosestNodeToPosition(transform.position);
         }
-        else
+
+        Node playerClosestNode = GetClosestNodeToPosition(player.position);
+
+        if (currentNode == null || playerClosestNode == null)
+            return;
+
+        path = AStarManager.instance.GeneratePath(currentNode, playerClosestNode);
+
+        if (path == null)
+        {
+            path = new List<Node>();
+            return;
+        }
+
+        if (path.Count > 0 && path[0] == currentNode)
+        {
+            path.RemoveAt(0);
+        }
+    }
+
+    private void MoveAlongPath()
+    {
+        if (path == null || path.Count == 0)
         {
             UpdateAnimation(Vector2.zero);
+            return;
+        }
 
-            Node[] nodes = FindObjectsOfType<Node>();
+        Node targetNode = path[0];
 
-            if (AStarManager.instance == null)
+        Vector3 targetPosition = new Vector3(
+            targetNode.transform.position.x,
+            targetNode.transform.position.y,
+            1f
+        );
+
+        Vector2 moveDirection = (targetPosition - transform.position).normalized;
+        UpdateAnimation(moveDirection);
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            targetPosition,
+            moveSpeed * Time.deltaTime
+        );
+
+        if (Vector2.Distance(transform.position, targetNode.transform.position) < 0.1f)
+        {
+            currentNode = targetNode;
+            path.RemoveAt(0);
+        }
+    }
+
+    private Node GetClosestNodeToPosition(Vector3 position)
+    {
+        Node[] nodes = FindObjectsOfType<Node>();
+
+        if (nodes == null || nodes.Length == 0)
+        {
+            Debug.LogError("EnemyTypeThree: No nodes found.");
+            return null;
+        }
+
+        float closestDistance = Mathf.Infinity;
+        Node closestNode = null;
+
+        foreach (Node node in nodes)
+        {
+            if (node == null)
+                continue;
+
+            float dist = Vector2.Distance(position, node.transform.position);
+            if (dist < closestDistance)
             {
-                Debug.LogError("AStarManager.instance is null");
-                return;
-            }
-
-            if (currentNode == null)
-            {
-                Debug.LogError("currentNode is null");
-                return;
-            }
-
-            if (nodes.Length == 0)
-            {
-                Debug.LogError("No nodes found");
-                return;
-            }
-
-            Node target = nodes[Random.Range(0, nodes.Length)];
-            path = AStarManager.instance.GeneratePath(currentNode, target);
-
-            if (path == null)
-            {
-                path = new List<Node>();
+                closestDistance = dist;
+                closestNode = node;
             }
         }
+
+        return closestNode;
     }
 
     private void UpdateAnimation(Vector2 moveDirection)
@@ -147,7 +176,9 @@ public class EnemyTypeThree : MonoBehaviour
         if (isAttacking)
             return;
 
-        if (moveDirection.sqrMagnitude > 0.001f)
+        bool isMoving = moveDirection.sqrMagnitude > 0.001f;
+
+        if (isMoving)
         {
             if (Mathf.Abs(moveDirection.x) > Mathf.Abs(moveDirection.y))
             {
@@ -161,6 +192,7 @@ public class EnemyTypeThree : MonoBehaviour
 
         animator.SetFloat("MoveX", lastMoveDirection.x);
         animator.SetFloat("MoveY", lastMoveDirection.y);
+        animator.SetBool("IsMoving", isMoving);
     }
 
     private bool CanSeePlayer()
@@ -197,7 +229,7 @@ public class EnemyTypeThree : MonoBehaviour
 
         isAttacking = true;
 
-        Vector2 dir = (player.transform.position - transform.position).normalized;
+        Vector2 dir = (player.position - transform.position).normalized;
 
         if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
         {
@@ -212,13 +244,18 @@ public class EnemyTypeThree : MonoBehaviour
         {
             animator.SetFloat("MoveX", lastMoveDirection.x);
             animator.SetFloat("MoveY", lastMoveDirection.y);
-            animator.ResetTrigger("Attack");
-            animator.SetTrigger("Attack");
+            animator.SetBool("IsMoving", false);
+            animator.SetBool("IsShooting", true);
         }
 
         ShootAtPlayer();
 
         yield return new WaitForSeconds(attackDuration);
+
+        if (animator != null)
+        {
+            animator.SetBool("IsShooting", false);
+        }
 
         isAttacking = false;
     }

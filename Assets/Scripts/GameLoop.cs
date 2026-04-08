@@ -1,21 +1,28 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameLoop : MonoBehaviour
 {
     public static GameLoop instance;
 
-    // Prefabs.
+    // Prefabs
     public GameObject enemyTypeOnePrefab;
     public GameObject enemyTypeTwoPrefab;
     public GameObject enemyTypeThreePrefab;
 
-    // Only one instance of TypeTwo and TypeThree enemies at a time.
-    private GameObject currentTypeTwo;
+    // TypeTwo: always keep this many alive
+    [SerializeField] private int typeTwoCount = 2;
+    private List<GameObject> currentTypeTwos = new List<GameObject>();
+
+    // TypeThree: keep one alive
     private GameObject currentTypeThree;
 
-    // TypeOne spawnrate.
+    // TypeOne spawn settings
     [SerializeField] private float typeOneSpawnInterval = 5f;
+    [SerializeField] private float difficultyIncreaseInterval = 10f;
+    [SerializeField] private float spawnRateMultiplier = 0.99f; // 1% faster every 10 seconds
+    [SerializeField] private float minSpawnInterval = 0.5f;
 
     private void Awake()
     {
@@ -24,7 +31,6 @@ public class GameLoop : MonoBehaviour
 
     private void Start()
     {
-        // Check that all PreFabs are established.
         if (enemyTypeOnePrefab == null)
             Debug.LogError("GameLoop: enemyTypeOnePrefab not assigned.");
 
@@ -34,21 +40,32 @@ public class GameLoop : MonoBehaviour
         if (enemyTypeThreePrefab == null)
             Debug.LogError("GameLoop: enemyTypeThreePrefab not assigned.");
 
-        // Spawn all enemies at the start.
         if (enemyTypeTwoPrefab != null)
-            SpawnTypeTwo();
+        {
+            for (int i = 0; i < typeTwoCount; i++)
+            {
+                SpawnTypeTwo();
+            }
+        }
 
         if (enemyTypeThreePrefab != null)
+        {
             SpawnTypeThree();
+        }
 
         if (enemyTypeOnePrefab != null)
+        {
             StartCoroutine(SpawnTypeOneLoop());
+        }
+
+        StartCoroutine(IncreaseDifficulty());
     }
 
     private void Update()
-    {   
-        // Type two and three enemies should not be deleted. Spawn new instance in the case that they are.
-        if (currentTypeTwo == null && enemyTypeTwoPrefab != null)
+    {
+        currentTypeTwos.RemoveAll(enemy => enemy == null);
+
+        while (currentTypeTwos.Count < typeTwoCount && enemyTypeTwoPrefab != null)
         {
             SpawnTypeTwo();
         }
@@ -59,7 +76,6 @@ public class GameLoop : MonoBehaviour
         }
     }
 
-    // Continue to spawn TypeOne Enemies on each interval.
     private IEnumerator SpawnTypeOneLoop()
     {
         while (true)
@@ -69,7 +85,21 @@ public class GameLoop : MonoBehaviour
         }
     }
 
-    // Instantiate new TypeOne enemy.
+    private IEnumerator IncreaseDifficulty()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(difficultyIncreaseInterval);
+
+            typeOneSpawnInterval = Mathf.Max(
+                minSpawnInterval,
+                typeOneSpawnInterval * spawnRateMultiplier
+            );
+
+            Debug.Log("TypeOne spawn interval is now: " + typeOneSpawnInterval);
+        }
+    }
+
     private void SpawnTypeOne()
     {
         if (enemyTypeOnePrefab == null)
@@ -78,17 +108,15 @@ public class GameLoop : MonoBehaviour
         Instantiate(enemyTypeOnePrefab);
     }
 
-    // Instantiate new TypeTwo enemy.
     private void SpawnTypeTwo()
     {
         if (enemyTypeTwoPrefab == null)
             return;
 
-        currentTypeTwo = Instantiate(enemyTypeTwoPrefab);
-        currentTypeTwo = Instantiate(enemyTypeTwoPrefab);
+        GameObject newEnemy = Instantiate(enemyTypeTwoPrefab);
+        currentTypeTwos.Add(newEnemy);
     }
 
-    // Instantiate new TypeThree enemy.
     private void SpawnTypeThree()
     {
         if (enemyTypeThreePrefab == null)
