@@ -29,6 +29,7 @@ public class GameLoop : MonoBehaviour
         instance = this;
     }
 
+    // Make sure all instances needed are created.
     private void Start()
     {
         if (enemyTypeOnePrefab == null)
@@ -61,6 +62,7 @@ public class GameLoop : MonoBehaviour
         StartCoroutine(IncreaseDifficulty());
     }
 
+    // Check to make sure ETT and ETH are all present.
     private void Update()
     {
         currentTypeTwos.RemoveAll(enemy => enemy == null);
@@ -76,6 +78,7 @@ public class GameLoop : MonoBehaviour
         }
     }
 
+    // Constantly spawn a new ETO on every spawn interval.
     private IEnumerator SpawnTypeOneLoop()
     {
         while (true)
@@ -85,6 +88,7 @@ public class GameLoop : MonoBehaviour
         }
     }
 
+    // Increase spawn rate as time goes on.
     private IEnumerator IncreaseDifficulty()
     {
         while (true)
@@ -100,6 +104,7 @@ public class GameLoop : MonoBehaviour
         }
     }
 
+    // Spawn a new instance of ETO.
     private void SpawnTypeOne()
     {
         if (enemyTypeOnePrefab == null)
@@ -108,6 +113,7 @@ public class GameLoop : MonoBehaviour
         Instantiate(enemyTypeOnePrefab);
     }
 
+    // Spawn a new instance of ETT. 
     private void SpawnTypeTwo()
     {
         if (enemyTypeTwoPrefab == null)
@@ -117,6 +123,7 @@ public class GameLoop : MonoBehaviour
         currentTypeTwos.Add(newEnemy);
     }
 
+    // Spawn a new instance of ETH.
     private void SpawnTypeThree()
     {
         if (enemyTypeThreePrefab == null)

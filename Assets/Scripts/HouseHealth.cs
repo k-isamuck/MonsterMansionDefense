@@ -16,12 +16,14 @@ public class HouseHealth : MonoBehaviour
         instance = this;
     }
 
+    // Always start at 5 health.
     private void Start()
     {
         currentHealth = maxHealth;
         UpdateUI();
     }
 
+    // Decrease health and end game if health reaches 0.
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
@@ -35,6 +37,7 @@ public class HouseHealth : MonoBehaviour
         }
     }
 
+    // Make sure health shows correct value.
     private void UpdateUI()
     {
         if (healthText != null)
@@ -43,6 +46,7 @@ public class HouseHealth : MonoBehaviour
         }
     }
 
+    // Change to GameOver screen.
     private void GameOver()
     {
         if (ScoreManager.instance != null)

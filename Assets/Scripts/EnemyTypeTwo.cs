@@ -14,6 +14,7 @@ public class EnemyTypeTwo : MonoBehaviour
     private Vector2 lastMoveDirection = Vector2.down;
     private bool isAttacking = false;
 
+    // Find random node.
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -52,6 +53,7 @@ public class EnemyTypeTwo : MonoBehaviour
         CreatePath();
     }
 
+    // Find quickest path to selected node.
     public void CreatePath()
     {
         if (path != null && path.Count > 0)
@@ -112,6 +114,7 @@ public class EnemyTypeTwo : MonoBehaviour
         }
     }
 
+    // Play correct animation.
     private void UpdateAnimation(Vector2 moveDirection)
     {
         if (animator == null)
@@ -136,6 +139,7 @@ public class EnemyTypeTwo : MonoBehaviour
         animator.SetFloat("MoveY", lastMoveDirection.y);
     }
 
+    // Prepare to attack when colliding with Player.
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log("E2 trigger entered by: " + collision.name);
@@ -148,6 +152,7 @@ public class EnemyTypeTwo : MonoBehaviour
         }
     }
 
+    // Attack and stun Player.
     private IEnumerator Attack(Player player)
     {
         if (isAttacking)

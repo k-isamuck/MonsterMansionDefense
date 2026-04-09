@@ -5,6 +5,7 @@ public class GameOverUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI highScoreText;
 
+    // Show highscore.
     private void Start()
     {
         int highScore = PlayerPrefs.GetInt("HighScore", 0);

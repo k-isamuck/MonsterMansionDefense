@@ -13,6 +13,7 @@ public class EnemyTypeThreeProjectile : MonoBehaviour
         Destroy(gameObject, lifeTime);
     }
 
+    // Move in direction shot.
     private void Update()
     {
         transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
@@ -23,6 +24,7 @@ public class EnemyTypeThreeProjectile : MonoBehaviour
         moveDirection = direction.normalized;
     }
 
+    // Break on impact with wall or Player
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Walls"))
@@ -31,6 +33,7 @@ public class EnemyTypeThreeProjectile : MonoBehaviour
             return;
         }
 
+        // Stun player on collision.
         Player player = collision.GetComponent<Player>();
         if (player != null)
         {

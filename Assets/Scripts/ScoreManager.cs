@@ -20,6 +20,7 @@ public class ScoreManager : MonoBehaviour
         UpdateUI();
     }
 
+    // Increase score by 10 for every second.
     private void Update()
     {
         timer += Time.deltaTime;
@@ -31,17 +32,20 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
+    // Update score counter.
     public void AddScore(int amount)
     {
         score += amount;
         UpdateUI();
     }
 
+    // Return the score.
     public int GetScore()
     {
         return score;
     }
 
+    // Log and update the highscore.
     public void SaveHighScore()
     {
         int highScore = PlayerPrefs.GetInt("HighScore", 0);
@@ -52,6 +56,7 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
+    // Make sure visible score counter is upodated to correct score.
     private void UpdateUI()
     {
         if (scoreText != null)

@@ -25,6 +25,7 @@ public class EnemyTypeThree : MonoBehaviour
     private float shootTimer;
     private float repathTimer;
 
+    // Make sure all instances needed are present.
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -38,11 +39,13 @@ public class EnemyTypeThree : MonoBehaviour
 
         player = playerObject.transform;
 
+        // Get node closest to Player.
         if (currentNode == null)
         {
             currentNode = GetClosestNodeToPosition(transform.position);
         }
 
+        // Tags for animation.
         if (animator != null)
         {
             animator.SetFloat("MoveX", lastMoveDirection.x);
@@ -51,9 +54,11 @@ public class EnemyTypeThree : MonoBehaviour
             animator.SetBool("IsShooting", false);
         }
 
+        // Find new path to player.
         RecalculatePathToPlayer();
     }
 
+    // Move towards player or attack.
     private void Update()
     {
         if (player == null || AStarManager.instance == null)
@@ -81,6 +86,7 @@ public class EnemyTypeThree : MonoBehaviour
         MoveAlongPath();
     }
 
+    // Get new path to Player.
     private void RecalculatePathToPlayer()
     {
         if (currentNode == null)
@@ -107,6 +113,7 @@ public class EnemyTypeThree : MonoBehaviour
         }
     }
 
+    // Follow along quickest path to Player.
     private void MoveAlongPath()
     {
         if (path == null || path.Count == 0)
@@ -139,6 +146,7 @@ public class EnemyTypeThree : MonoBehaviour
         }
     }
 
+    // Get position of Player and find the quickest path to the node closest to Player.
     private Node GetClosestNodeToPosition(Vector3 position)
     {
         Node[] nodes = FindObjectsOfType<Node>();
@@ -168,6 +176,7 @@ public class EnemyTypeThree : MonoBehaviour
         return closestNode;
     }
 
+    // Make sure correct animation is playing.
     private void UpdateAnimation(Vector2 moveDirection)
     {
         if (animator == null)
@@ -195,6 +204,7 @@ public class EnemyTypeThree : MonoBehaviour
         animator.SetBool("IsMoving", isMoving);
     }
 
+    // Check if player is in line of sight.
     private bool CanSeePlayer()
     {
         if (player == null)
@@ -222,6 +232,7 @@ public class EnemyTypeThree : MonoBehaviour
         return hit.collider.CompareTag("Player");
     }
 
+    // Update animation and if shot is available.
     private IEnumerator AttackAndShoot()
     {
         if (isAttacking)
@@ -260,6 +271,7 @@ public class EnemyTypeThree : MonoBehaviour
         isAttacking = false;
     }
 
+    // Launch projectile at Player.
     private void ShootAtPlayer()
     {
         if (projectilePrefab == null)
