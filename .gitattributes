@@ -1,39 +1,17 @@
-# Normalize line endings
-* text=auto
+# Exclude Unity YAML/assets from GitHub language stats
+*.mat      -linguist-detectable linguist-generated
+*.asset    -linguist-detectable linguist-generated
+*.unity    -linguist-detectable linguist-generated
+*.prefab   -linguist-detectable linguist-generated
+*.anim     -linguist-detectable linguist-generated
+*.controller -linguist-detectable linguist-generated
+*.lighting -linguist-detectable linguist-generated
+*.shadergraph -linguist-detectable linguist-generated
+*.shadervariants -linguist-detectable linguist-generated
+*.terrainlayer -linguist-detectable linguist-generated
 
-# =========================
-# UNITY: mark generated folders
-# =========================
-Library/** linguist-generated
-Logs/** linguist-generated
-Temp/** linguist-generated
-UserSettings/** linguist-generated
-Build/** linguist-generated
-Builds/** linguist-generated
+# Keep C# counted
+*.cs linguist-language=C#
 
-# Package cache (huge + auto generated)
-Packages/** linguist-generated
-
-# =========================
-# UNITY ASSET FILES (misdetected as Wolfram / others)
-# =========================
-*.mat linguist-vendored
-*.unity linguist-vendored
-*.prefab linguist-vendored
-*.asset linguist-vendored
-*.anim linguist-vendored
-*.controller linguist-vendored
-*.lighting linguist-vendored
-*.shadergraph linguist-vendored
-*.shadervariants linguist-vendored
-*.terrainlayer linguist-vendored
-
-# Keep real code detectable
-*.cs linguist-detectable=true
-*.shader linguist-detectable=true
-
-# Correct Wolfram Language
-*.mat linguist-generated
-*.asset linguist-generated
-*.unity linguist-generated
-*.prefab linguist-generated
+# Ignore TutorialInfo layout files from language stats
+*.wlt linguist-generated
