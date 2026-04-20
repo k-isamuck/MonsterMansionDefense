@@ -12,3 +12,6 @@
 
 # Keep C# counted
 *.cs linguist-language=C#
+
+# Ignore TutorialInfo layout files from language stats
+*.wlt linguist-generated
