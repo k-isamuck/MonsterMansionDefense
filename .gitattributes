@@ -31,3 +31,9 @@ Packages/** linguist-generated
 # Keep real code detectable
 *.cs linguist-detectable=true
 *.shader linguist-detectable=true
+
+# Correct Wolfram Language
+*.mat linguist-generated
+*.asset linguist-generated
+*.unity linguist-generated
+*.prefab linguist-generated
