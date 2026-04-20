@@ -1,2 +1,14 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Exclude Unity YAML/assets from GitHub language stats
+*.mat      -linguist-detectable linguist-generated
+*.asset    -linguist-detectable linguist-generated
+*.unity    -linguist-detectable linguist-generated
+*.prefab   -linguist-detectable linguist-generated
+*.anim     -linguist-detectable linguist-generated
+*.controller -linguist-detectable linguist-generated
+*.lighting -linguist-detectable linguist-generated
+*.shadergraph -linguist-detectable linguist-generated
+*.shadervariants -linguist-detectable linguist-generated
+*.terrainlayer -linguist-detectable linguist-generated
+
+# Keep C# counted
+*.cs linguist-language=C#
